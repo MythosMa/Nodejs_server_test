@@ -1,6 +1,10 @@
 const url = require("url");
 const querystring = require("querystring");
 const createServer = require("../modules/httpServer");
+const { ApiUrl } = require("./types");
+const initPlayer = require("./apis/initPlayer");
+
+let coreController = null;
 
 const toGet = (request, response) => {
   let requestObject = url.parse(request.url, true);
@@ -32,21 +36,29 @@ const toPost = (request, response) => {
   });
 };
 
-const httpServerCallback = (request, response) => {
+const getTableInfoGet = (request, response) => {};
+
+const getTableInfo = (request, response) => {
   switch (request.method) {
     case "GET":
-      toGet(request, response);
+      getTableInfoGet(request, response);
       break;
     case "POST":
-      toPost(request, response);
-      break;
-    default:
-      response.statusCode = 500;
-      response.end();
       break;
   }
 };
 
-module.exports = httpServer = (port) => {
+const httpServerCallback = (request, response) => {
+  const { url } = request;
+  switch (url) {
+    case ApiUrl.InitPlayer:
+      initPlayer(request, response, coreController);
+      break;
+  }
+};
+
+module.exports = httpServer = (port, controller) => {
   const server = createServer(port, httpServerCallback);
+  coreController = controller;
+  return server;
 };
